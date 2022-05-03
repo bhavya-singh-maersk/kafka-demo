@@ -1,20 +1,23 @@
 azure_blob_store_container_name: producer
 
 kafka:
-  bootstrap-servers: 9092
+  bootstrap-servers: localhost:9092 #pkc-4j8dq.southeastasia.azure.confluent.cloud:9092
   notification:
-    jbs:
-      topic: eacloud
-      headers:
-        count: 1
-        keys: X-DOCBROKER-Correlation-ID
-    activity:
-      topic: retry
-      headers:
-        count: 3
-        keys: X-UserId,X-TenantId,X-CorrelationId
+    topic: eacloud #test-compression
+  headers:
+    count: 1
+    keys: X-DOCBROKER-Correlation-ID
   retry:
     topic: retry
+  event: vv
+  listener:
+    topics: eacloud
+    #group: vv-consumer
+    #thread:
+      #vv: 1
+  #vv:
+    #topic: eacloud
+
 
 
 
@@ -26,25 +29,44 @@ spring:
     listener:
       ack-mode: manual-immediate
     consumer:
+      bootstrap-servers: localhost:9092 #pkc-4j8dq.southeastasia.azure.confluent.cloud:9092
       auto-offset-reset: earliest
       fetch-max-wait: 3600
       enable-auto-commit: false
-      group-id: test-consumer-group
+      group-id: group-2
       max-poll-records: 20
       key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
       value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
-      fetch:
+      message:
         max:
-          bytes: 5
+          bytes: 2660050
       properties:
-        partition-assignment-strategy: org.apache.kafka.clients.consumer.RoundRobinAssignor
+        fetch:
+          max:
+            bytes: 2660050
+        max:
+          partition:
+            fetch:
+              bytes: 2660050
+        #ssl.endpoint.identification.algorithm: https
+        #sasl.mechanism: PLAIN
+        #sasl.jaas.config: org.apache.kafka.common.security.plain.PlainLoginModule required username="GK2CGDIYO5N2MYCB" password="MfYCpwaT8OrmmgUPPXTrKj0kvi5tQQMA++RiKZJbgYWPTg+4n81AqJjs3WsfDDVH";
+        #security.protocol: SASL_SSL
+
     producer:
-      delete:
-        topic:
-          enable: true
+      bootstrap-servers: localhost:9092 #pkc-4j8dq.southeastasia.azure.confluent.cloud:9092
       properties:
+        #ssl.endpoint.identification.algorithm: https
+        #sasl.mechanism: PLAIN
+        #sasl.jaas.config: org.apache.kafka.common.security.plain.PlainLoginModule required username="GK2CGDIYO5N2MYCB" password="MfYCpwaT8OrmmgUPPXTrKj0kvi5tQQMA++RiKZJbgYWPTg+4n81AqJjs3WsfDDVH";
+        #security.protocol: SASL_SSL
+        compression:
+          type: gzip
         acks: all
         retries: 10000
+        delivery:
+          timeout:
+            ms: 60000
         enable:
           idempotence: true
         max:
@@ -53,6 +75,8 @@ spring:
               requests:
                 per:
                   connection: 5
+          #request:
+            #size: 2660050
 
 azure:
   storage:

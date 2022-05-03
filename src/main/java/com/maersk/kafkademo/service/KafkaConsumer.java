@@ -15,7 +15,7 @@ import java.util.Objects;
 @Component
 public class KafkaConsumer <T> {
 
-    @KafkaListener(topics = {"${kafka.notification.jbs.topic}"}, containerFactory ="kafkaListenerContainerFactory")
+    @KafkaListener(topics = "eacloud", groupId = "test-kafka")
     public void readMessage(ConsumerRecord<String, T> consumerRecord, Acknowledgment acknowledgment)
     {
        if (Objects.nonNull(consumerRecord) && Objects.nonNull(consumerRecord.value()))
@@ -23,6 +23,7 @@ public class KafkaConsumer <T> {
            log.info("Received message: {}", consumerRecord.value());
            consumerRecord.headers().forEach(header -> log.info("Kafka header: {}", new String(header.value(), StandardCharsets.UTF_8)));
        }
-       acknowledgment.acknowledge();
+       throw new RuntimeException("test retry mechanism");
+       //acknowledgment.acknowledge();
     }
 }
